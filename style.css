@@ -265,9 +265,9 @@ h2 {
 
 .top-credit {
   width: min(100%, 720px);
-  margin: 14px auto 0;
-  color: #4d6686;
-  font-size: clamp(0.84rem, 3vw, 0.98rem);
+  margin: 10px auto 0;
+  color: #657891;
+  font-size: clamp(0.68rem, 2.4vw, 0.78rem);
   font-weight: 400;
   line-height: 1.4;
   text-align: center;
@@ -768,8 +768,8 @@ h2 {
   }
 
   .top-credit {
-    margin-top: 9px;
-    font-size: 0.82rem;
+    margin-top: 7px;
+    font-size: 0.68rem;
   }
 
   .image-wrap {
