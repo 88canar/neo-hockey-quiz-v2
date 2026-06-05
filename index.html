@@ -26,6 +26,7 @@
       <div id="startScreen" class="screen">
         <div class="top-visual-wrap">
           <img class="top-visual" src="./top.png" alt="ファール暗記クイズのトップ画像">
+          <button id="soundToggleButton" class="sound-toggle-button" type="button" aria-pressed="false">音 ON</button>
         </div>
         <div class="mode-card-grid">
           <button id="flashcardModeButton" class="mode-card flash-card" type="button">
@@ -44,6 +45,7 @@
       </div>
 
       <div id="quizScreen" class="screen is-hidden">
+        <p id="quizCounter" class="screen-counter">1/16</p>
         <div class="image-wrap" id="imageWrap">
           <img id="questionImage" src="./images_question/1.jpg" alt="ファールのイラスト">
         </div>
@@ -53,26 +55,25 @@
         </div>
 
         <div id="choices" class="choices"></div>
-        <button id="checkChoiceButton" class="primary-button compact-check-button is-hidden" type="button" disabled>答え合わせ</button>
 
         <form id="inputAnswerForm" class="input-answer is-hidden">
           <label for="answerInput">ファール名を入力</label>
           <div class="input-row">
             <input id="answerInput" type="text" autocomplete="off" placeholder="例：キッキング">
-            <button class="primary-button inline-button" type="submit">答え合わせ</button>
           </div>
         </form>
+
+        <button id="quizActionButton" class="primary-button compact-check-button" type="button" disabled>答え合わせ</button>
 
         <div id="resultBox" class="result-box is-hidden">
           <strong id="resultTitle" class="result-title"></strong>
           <p id="answerText"></p>
           <p id="descriptionText"></p>
         </div>
-
-        <button id="nextButton" class="primary-button is-hidden" type="button">次の問題へ</button>
       </div>
 
       <div id="flashcardScreen" class="screen is-hidden">
+        <p id="flashcardCounter" class="screen-counter">1/16</p>
         <div class="image-wrap flashcard-image-wrap">
           <img id="flashcardImage" src="./images_question/1.jpg" alt="フラッシュカード画像">
         </div>

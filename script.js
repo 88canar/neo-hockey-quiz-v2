@@ -122,13 +122,13 @@ const finishScreen = document.getElementById("finishScreen");
 const flashcardModeButton = document.getElementById("flashcardModeButton");
 const choiceModeButton = document.getElementById("choiceModeButton");
 const inputModeButton = document.getElementById("inputModeButton");
+const soundToggleButton = document.getElementById("soundToggleButton");
 const restartButton = document.getElementById("restartButton");
 const topReturnButton = document.getElementById("topReturnButton");
 const confirmDialog = document.getElementById("confirmDialog");
 const confirmReturnButton = document.getElementById("confirmReturnButton");
 const cancelReturnButton = document.getElementById("cancelReturnButton");
-const nextButton = document.getElementById("nextButton");
-const checkChoiceButton = document.getElementById("checkChoiceButton");
+const quizActionButton = document.getElementById("quizActionButton");
 const questionImage = document.getElementById("questionImage");
 const flashcardImage = document.getElementById("flashcardImage");
 const flipCardButton = document.getElementById("flipCardButton");
@@ -141,6 +141,8 @@ const resultBox = document.getElementById("resultBox");
 const resultTitle = document.getElementById("resultTitle");
 const answerText = document.getElementById("answerText");
 const descriptionText = document.getElementById("descriptionText");
+const quizCounter = document.getElementById("quizCounter");
+const flashcardCounter = document.getElementById("flashcardCounter");
 const progressText = document.getElementById("progressText");
 const scoreText = document.getElementById("scoreText");
 const finalScore = document.getElementById("finalScore");
@@ -155,6 +157,7 @@ let audioContext = null;
 let flashcardIndex = 0;
 let flashcardRevealed = false;
 let selectedChoice = null;
+let soundEnabled = true;
 
 function shuffle(items) {
   return [...items].sort(() => Math.random() - 0.5);
@@ -195,18 +198,18 @@ function showQuestion() {
 
   resultBox.classList.add("is-hidden");
   resultBox.classList.remove("is-correct", "is-wrong");
-  nextButton.classList.add("is-hidden");
-  checkChoiceButton.classList.add("is-hidden");
-  checkChoiceButton.disabled = true;
+  quizActionButton.classList.remove("is-next");
+  quizActionButton.textContent = "答え合わせ";
+  quizActionButton.disabled = true;
   questionImage.src = question.questionImage;
   questionImage.alt = `${currentIndex + 1}問目のファール画像`;
+  quizCounter.textContent = `${currentIndex + 1}/${questions.length}`;
   progressText.textContent = `${currentIndex + 1} / ${questions.length}`;
   scoreText.textContent = `${score}点`;
 
   if (currentMode === "choice") {
     choices.classList.remove("is-hidden");
     inputAnswerForm.classList.add("is-hidden");
-    checkChoiceButton.classList.remove("is-hidden");
     renderChoices(question);
   } else {
     choices.classList.add("is-hidden");
@@ -245,7 +248,7 @@ function selectChoiceAnswer(selected, question, selectedButton) {
 
   selectedButton.classList.add("selected");
   selectedChoice = { selected, question, selectedButton };
-  checkChoiceButton.disabled = false;
+  quizActionButton.disabled = false;
 }
 
 function checkChoiceAnswer() {
@@ -269,16 +272,25 @@ function checkChoiceAnswer() {
     }
   });
 
-  checkChoiceButton.disabled = true;
   showAnswer(question, isCorrect);
 }
 
 function checkTypedAnswer(event) {
   event.preventDefault();
+  handleQuizAction();
+}
+
+function checkInputReady() {
+  if (currentMode !== "input" || answered) return;
+  quizActionButton.disabled = answerInput.value.trim() === "";
+}
+
+function checkTypedAnswerNow() {
   if (answered) return;
 
   const question = questions[currentIndex];
   const typedAnswer = answerInput.value.trim();
+  if (typedAnswer === "") return;
   const isCorrect = typedAnswer === question.answer;
 
   if (isCorrect) score += 1;
@@ -288,6 +300,7 @@ function checkTypedAnswer(event) {
 
 function showAnswer(question, isCorrect = false) {
   answered = true;
+  selectedChoice = null;
   questionImage.src = question.answerImage;
   questionImage.alt = `${question.answer}の答え画像`;
 
@@ -307,8 +320,32 @@ function showAnswer(question, isCorrect = false) {
   answerText.textContent = `答え：${question.answer}`;
   descriptionText.textContent = `解説：${question.description}`;
   resultBox.classList.remove("is-hidden");
-  nextButton.classList.remove("is-hidden");
+  quizActionButton.disabled = false;
+  quizActionButton.textContent = "次の問題へ";
+  quizActionButton.classList.add("is-next");
   scoreText.textContent = `${score}点`;
+}
+
+function goNextQuestion() {
+  currentIndex += 1;
+  if (currentIndex >= questions.length) {
+    showFinish();
+  } else {
+    showQuestion();
+  }
+}
+
+function handleQuizAction() {
+  if (answered) {
+    goNextQuestion();
+    return;
+  }
+
+  if (currentMode === "choice") {
+    checkChoiceAnswer();
+  } else {
+    checkTypedAnswerNow();
+  }
 }
 
 function showFinish() {
@@ -355,13 +392,28 @@ function showFlashcard() {
   prevCardButton.disabled = flashcardIndex === 0;
   nextCardButton.disabled = false;
   nextCardButton.textContent = flashcardIndex === quizData.length - 1 ? "最初に戻る" : "次へ";
+  flashcardCounter.textContent = `${flashcardIndex + 1}/${quizData.length}`;
   progressText.textContent = `${flashcardIndex + 1} / ${quizData.length}`;
   scoreText.textContent = "暗記";
 }
 
 function flipFlashcard() {
   flashcardRevealed = !flashcardRevealed;
+  playFlipSound();
   showFlashcard();
+}
+
+function updateSoundButton() {
+  soundToggleButton.textContent = soundEnabled ? "音 ON" : "音 OFF";
+  soundToggleButton.setAttribute("aria-pressed", String(!soundEnabled));
+  soundToggleButton.classList.toggle("is-off", !soundEnabled);
+}
+
+function toggleSound(event) {
+  event.stopPropagation();
+  soundEnabled = !soundEnabled;
+  updateSoundButton();
+  if (soundEnabled) playStartSound();
 }
 
 function moveFlashcard(direction) {
@@ -391,6 +443,7 @@ function getAudioContextClass() {
 }
 
 async function ensureAudioReady() {
+  if (!soundEnabled) return false;
   const AudioContextClass = getAudioContextClass();
   if (!AudioContextClass) return false;
 
@@ -422,6 +475,7 @@ function playTone(frequency, startTime, duration, volume = 0.08, type = "sine") 
 }
 
 async function playAnswerSound(isCorrect) {
+  if (!soundEnabled) return;
   const isReady = await ensureAudioReady();
   if (!isReady || !audioContext) return;
 
@@ -436,6 +490,7 @@ async function playAnswerSound(isCorrect) {
 }
 
 async function playStartSound() {
+  if (!soundEnabled) return;
   const isReady = await ensureAudioReady();
   if (!isReady || !audioContext) return;
 
@@ -445,7 +500,18 @@ async function playStartSound() {
   playTone(1047, now + 0.25, 0.28, 0.08, "sine");
 }
 
+async function playFlipSound() {
+  if (!soundEnabled) return;
+  const isReady = await ensureAudioReady();
+  if (!isReady || !audioContext) return;
+
+  const now = audioContext.currentTime + 0.01;
+  playTone(740, now, 0.055, 0.045, "triangle");
+  playTone(520, now + 0.045, 0.075, 0.035, "sine");
+}
+
 async function playFinishSound() {
+  if (!soundEnabled) return;
   const isReady = await ensureAudioReady();
   if (!isReady || !audioContext) return;
 
@@ -457,6 +523,7 @@ async function playFinishSound() {
 }
 
 async function playPerfectSound() {
+  if (!soundEnabled) return;
   const isReady = await ensureAudioReady();
   if (!isReady || !audioContext) return;
 
@@ -471,23 +538,18 @@ async function playPerfectSound() {
 flashcardModeButton.addEventListener("click", startFlashcards);
 choiceModeButton.addEventListener("click", () => startQuiz("choice"));
 inputModeButton.addEventListener("click", () => startQuiz("input"));
+soundToggleButton.addEventListener("click", toggleSound);
 restartButton.addEventListener("click", showStartScreen);
 topReturnButton.addEventListener("click", openReturnDialog);
 confirmReturnButton.addEventListener("click", showStartScreen);
 cancelReturnButton.addEventListener("click", closeReturnDialog);
 inputAnswerForm.addEventListener("submit", checkTypedAnswer);
-checkChoiceButton.addEventListener("click", checkChoiceAnswer);
+answerInput.addEventListener("input", checkInputReady);
+quizActionButton.addEventListener("click", handleQuizAction);
 flipCardButton.addEventListener("click", flipFlashcard);
 flashcardImage.addEventListener("click", flipFlashcard);
 prevCardButton.addEventListener("click", () => moveFlashcard(-1));
 nextCardButton.addEventListener("click", () => moveFlashcard(1));
 
-nextButton.addEventListener("click", () => {
-  currentIndex += 1;
-  if (currentIndex >= questions.length) {
-    showFinish();
-  } else {
-    showQuestion();
-  }
-});
+updateSoundButton();
 
