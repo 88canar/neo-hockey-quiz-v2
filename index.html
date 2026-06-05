@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ホッケーファール暗記クイズ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <section id="appCard" class="quiz-card is-start" aria-live="polite">
+      <header class="quiz-header">
+        <div>
+          <p class="eyebrow">ホッケー 16ファール</p>
+          <h1 id="screenTitle">ファール暗記クイズ</h1>
+        </div>
+        <div class="header-tools">
+          <button id="topReturnButton" class="return-button" type="button">トップに戻る</button>
+          <div class="score-box">
+            <span id="progressText">1 / 16</span>
+            <strong id="scoreText">0点</strong>
+          </div>
+        </div>
+      </header>
+
+      <div id="startScreen" class="screen">
+        <div class="top-visual-wrap">
+          <img class="top-visual" src="./top.png" alt="ファール暗記クイズのトップ画像">
+        </div>
+        <div class="mode-card-grid">
+          <button id="flashcardModeButton" class="mode-card flash-card" type="button">
+            <span>まずは覚える！カードをめくって確認</span>
+            <strong>フラッシュカードモード</strong>
+          </button>
+          <button id="choiceModeButton" class="mode-card choice-card" type="button">
+            <span>クイズに挑戦！選択肢から答える</span>
+            <strong>4択モード</strong>
+          </button>
+          <button id="inputModeButton" class="mode-card input-card" type="button">
+            <span>クイズに挑戦！自分でファール名を書く</span>
+            <strong>入力モード</strong>
+          </button>
+        </div>
+      </div>
+
+      <div id="quizScreen" class="screen is-hidden">
+        <div class="image-wrap" id="imageWrap">
+          <img id="questionImage" src="./images_question/1.jpg" alt="ファールのイラスト">
+        </div>
+
+        <div class="question-row">
+          <p id="questionText">この画像はどのファール？</p>
+          <button id="revealButton" class="secondary-button" type="button">答えを見る</button>
+        </div>
+
+        <div id="choices" class="choices"></div>
+
+        <form id="inputAnswerForm" class="input-answer is-hidden">
+          <label for="answerInput">ファール名を入力</label>
+          <div class="input-row">
+            <input id="answerInput" type="text" autocomplete="off" placeholder="例：キッキング">
+            <button class="primary-button inline-button" type="submit">答え合わせ</button>
+          </div>
+        </form>
+
+        <div id="resultBox" class="result-box is-hidden">
+          <strong id="resultTitle" class="result-title"></strong>
+          <p id="answerText"></p>
+          <p id="descriptionText"></p>
+        </div>
+
+        <button id="nextButton" class="primary-button is-hidden" type="button">次の問題へ</button>
+      </div>
+
+      <div id="flashcardScreen" class="screen is-hidden">
+        <div class="image-wrap flashcard-image-wrap">
+          <img id="flashcardImage" src="./images_question/1.jpg" alt="フラッシュカード画像">
+        </div>
+
+        <button id="flipCardButton" class="primary-button flip-button" type="button">カードをめくる</button>
+        <div class="flashcard-nav">
+          <button id="prevCardButton" class="secondary-button" type="button">前へ</button>
+          <button id="nextCardButton" class="secondary-button" type="button">次へ</button>
+        </div>
+      </div>
+
+      <div id="finishScreen" class="screen finish-screen is-hidden">
+        <p class="eyebrow">結果</p>
+        <h2 id="finalScore">16問中 0問 正解</h2>
+        <p id="finalMessage"></p>
+        <button id="restartButton" class="primary-button" type="button">もう一度チャレンジ</button>
+      </div>
+    </section>
+
+    <div id="confirmDialog" class="dialog-backdrop is-hidden" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <div class="dialog-card">
+        <h2 id="confirmTitle">トップ画面に戻りますか？</h2>
+        <p>現在の進行状況はリセットされます。</p>
+        <div class="dialog-actions">
+          <button id="confirmReturnButton" class="primary-button inline-button" type="button">トップに戻る</button>
+          <button id="cancelReturnButton" class="secondary-button dialog-cancel" type="button">キャンセル</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
