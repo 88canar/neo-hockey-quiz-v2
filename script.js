@@ -436,6 +436,21 @@ function toggleSound(event) {
   if (soundEnabled) playStartSound();
 }
 
+function addTapAndClickHandler(element, handler) {
+  let lastPointerTime = 0;
+
+  element.addEventListener("pointerdown", (event) => {
+    if (event.pointerType === "mouse") return;
+    lastPointerTime = Date.now();
+    handler(event);
+  });
+
+  element.addEventListener("click", (event) => {
+    if (Date.now() - lastPointerTime < 500) return;
+    handler(event);
+  });
+}
+
 function moveFlashcard(direction) {
   if (randomPlayState.active) return;
   const nextIndex = flashcardIndex + direction;
@@ -706,10 +721,10 @@ flipCardButton.addEventListener("click", flipFlashcard);
 flashcardImage.addEventListener("click", flipFlashcard);
 prevCardButton.addEventListener("click", () => moveFlashcard(-1));
 nextCardButton.addEventListener("click", () => moveFlashcard(1));
-randomPlayButton.addEventListener("click", startRandomPlayback);
-pauseRandomButton.addEventListener("click", pauseRandomPlayback);
-resumeRandomButton.addEventListener("click", resumeRandomPlayback);
-stopRandomButton.addEventListener("click", () => stopRandomPlayback(true));
+addTapAndClickHandler(randomPlayButton, startRandomPlayback);
+addTapAndClickHandler(pauseRandomButton, pauseRandomPlayback);
+addTapAndClickHandler(resumeRandomButton, resumeRandomPlayback);
+addTapAndClickHandler(stopRandomButton, () => stopRandomPlayback(true));
 
 updateSoundButton();
 
