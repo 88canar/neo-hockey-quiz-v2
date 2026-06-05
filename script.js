@@ -163,7 +163,6 @@ let flashcardIndex = 0;
 let flashcardRevealed = false;
 let selectedChoice = null;
 let soundEnabled = true;
-let speechTimerId = null;
 let randomPlayState = {
   active: false,
   paused: false,
@@ -213,7 +212,6 @@ function showQuestion() {
   const question = questions[currentIndex];
   answered = false;
   selectedChoice = null;
-  cancelSpeech();
 
   resultBox.classList.add("is-hidden");
   resultBox.classList.remove("is-correct", "is-wrong");
@@ -333,7 +331,6 @@ function showAnswer(question, isCorrect = false) {
 
   answerInput.disabled = true;
   playAnswerSound(isCorrect);
-  speakFoulName(question.answer, 720);
   resultBox.classList.toggle("is-correct", isCorrect);
   resultBox.classList.toggle("is-wrong", !isCorrect);
   resultTitle.textContent = isCorrect ? "○ 正解！" : "× 不正解";
@@ -369,7 +366,6 @@ function handleQuizAction() {
 }
 
 function showFinish() {
-  cancelSpeech();
   quizScreen.classList.add("is-hidden");
   flashcardScreen.classList.add("is-hidden");
   finishScreen.classList.remove("is-hidden");
@@ -394,7 +390,6 @@ function showFinish() {
 
 function showStartScreen() {
   stopRandomPlayback(false);
-  cancelSpeech();
   quizScreen.classList.add("is-hidden");
   flashcardScreen.classList.add("is-hidden");
   finishScreen.classList.add("is-hidden");
@@ -426,11 +421,6 @@ function flipFlashcard() {
   flashcardRevealed = !flashcardRevealed;
   playFlipSound();
   showFlashcard();
-  if (flashcardRevealed) {
-    speakFoulName(quizData[flashcardIndex].answer, 260);
-  } else {
-    cancelSpeech();
-  }
 }
 
 function updateSoundButton() {
@@ -443,7 +433,6 @@ function toggleSound(event) {
   event.stopPropagation();
   soundEnabled = !soundEnabled;
   updateSoundButton();
-  if (!soundEnabled) cancelSpeech();
   if (soundEnabled) playStartSound();
 }
 
@@ -517,7 +506,6 @@ function advanceRandomPlayback() {
     randomPlayState.showingAnswer = true;
     playFlipSound();
     showRandomCard();
-    speakFoulName(randomPlayState.order[randomPlayState.index].answer, 260);
     scheduleRandomStep(2000);
     return;
   }
@@ -562,7 +550,6 @@ function pauseRandomPlayback() {
   randomPlayState.remainingMs = Math.max(250, randomPlayState.remainingMs - elapsed);
   randomPlayState.paused = true;
   clearRandomTimer();
-  cancelSpeech();
   pauseRandomButton.disabled = true;
   resumeRandomButton.disabled = false;
 }
@@ -580,7 +567,6 @@ function stopRandomPlayback(restoreUi = true) {
   if (!randomPlayState.active && !randomPlayState.timerId) return;
 
   clearRandomTimer();
-  cancelSpeech();
   randomPlayState.active = false;
   randomPlayState.paused = false;
   randomPlayState.order = [];
@@ -600,7 +586,6 @@ function stopRandomPlayback(restoreUi = true) {
 
 function finishRandomPlayback() {
   clearRandomTimer();
-  cancelSpeech();
   randomPlayState.active = false;
   randomPlayState.paused = false;
   playFinishSound();
@@ -654,52 +639,6 @@ function playTone(frequency, startTime, duration, volume = 0.08, type = "sine") 
   gain.connect(audioContext.destination);
   oscillator.start(startTime);
   oscillator.stop(startTime + duration + 0.02);
-}
-
-function getSpeechApi() {
-  return window.speechSynthesis || null;
-}
-
-function cancelSpeech() {
-  if (speechTimerId) {
-    clearTimeout(speechTimerId);
-    speechTimerId = null;
-  }
-
-  const speech = getSpeechApi();
-  if (speech) {
-    speech.cancel();
-  }
-}
-
-function speakFoulName(foulName, delayMs = 500) {
-  if (!soundEnabled || !foulName) return;
-
-  const speech = getSpeechApi();
-  if (!speech || typeof SpeechSynthesisUtterance === "undefined") return;
-
-  if (speechTimerId) {
-    clearTimeout(speechTimerId);
-  }
-
-  speechTimerId = setTimeout(() => {
-    if (!soundEnabled) return;
-
-    speech.cancel();
-    const utterance = new SpeechSynthesisUtterance(foulName);
-    utterance.lang = "ja-JP";
-    utterance.volume = 0.78;
-    utterance.rate = 0.9;
-    utterance.pitch = 1.05;
-
-    const japaneseVoice = speech.getVoices().find((voice) => voice.lang && voice.lang.toLowerCase().startsWith("ja"));
-    if (japaneseVoice) {
-      utterance.voice = japaneseVoice;
-    }
-
-    speech.speak(utterance);
-    speechTimerId = null;
-  }, delayMs);
 }
 
 async function playAnswerSound(isCorrect) {
