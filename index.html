@@ -83,11 +83,17 @@
           <button id="prevCardButton" class="secondary-button" type="button">前へ</button>
           <button id="nextCardButton" class="secondary-button" type="button">次へ</button>
         </div>
+        <button id="randomPlayButton" class="secondary-button random-play-button" type="button">ランダム再生</button>
+        <div id="randomControls" class="random-controls is-hidden">
+          <button id="pauseRandomButton" class="secondary-button" type="button">一時停止</button>
+          <button id="resumeRandomButton" class="secondary-button" type="button" disabled>再開</button>
+          <button id="stopRandomButton" class="secondary-button stop-random-button" type="button">停止</button>
+        </div>
       </div>
 
       <div id="finishScreen" class="screen finish-screen is-hidden">
         <p class="eyebrow">結果</p>
-        <h2 id="finalScore">16問中 0問 正解</h2>
+        <h2 id="finalScore">16問中 <span>0問 正解</span></h2>
         <p id="finalMessage"></p>
         <button id="restartButton" class="primary-button" type="button">もう一度チャレンジ</button>
       </div>

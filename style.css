@@ -375,15 +375,15 @@ h2 {
 }
 
 .choice-button.correct {
-  color: var(--correct-blue);
-  background: #edf8ff;
-  border-color: var(--correct-blue);
+  color: var(--bad);
+  background: #fff0ed;
+  border-color: var(--bad);
 }
 
 .choice-button.wrong {
-  color: #9a2019;
-  background: #fff0ed;
-  border-color: var(--bad);
+  color: var(--correct-blue);
+  background: #edf8ff;
+  border-color: var(--correct-blue);
 }
 
 .choice-button.selected {
@@ -528,6 +528,34 @@ h2 {
   margin-top: 12px;
 }
 
+.random-play-button {
+  width: 100%;
+  margin-top: 12px;
+  background: linear-gradient(180deg, #19a3ff, var(--blue));
+  box-shadow: 0 5px 0 rgba(7, 87, 186, 0.22);
+}
+
+.random-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.random-controls .secondary-button {
+  width: 100%;
+}
+
+.random-controls .secondary-button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.stop-random-button {
+  background: linear-gradient(180deg, #ff7f8e, #df3b33);
+  box-shadow: 0 5px 0 rgba(174, 38, 31, 0.24);
+}
+
 .flashcard-image-wrap {
   width: min(100%, 860px);
   cursor: pointer;
@@ -554,6 +582,13 @@ h2 {
   font-size: clamp(2.1rem, 9vw, 4.2rem);
   line-height: 1.15;
   box-shadow: 0 14px 34px rgba(8, 68, 135, 0.22);
+}
+
+.finish-screen h2 span {
+  display: inline-block;
+  color: var(--bad);
+  font-size: 1.15em;
+  font-weight: 900;
 }
 
 .finish-screen p {
@@ -850,6 +885,23 @@ h2 {
   .flashcard-nav {
     gap: 7px;
     margin-top: 7px;
+  }
+
+  .random-play-button {
+    min-height: 42px;
+    margin-top: 7px;
+  }
+
+  .random-controls {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+    margin-top: 7px;
+  }
+
+  .random-controls .secondary-button {
+    min-height: 42px;
+    padding: 7px 6px;
+    font-size: 0.94rem;
   }
 
   .dialog-actions {

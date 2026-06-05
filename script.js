@@ -134,6 +134,11 @@ const flashcardImage = document.getElementById("flashcardImage");
 const flipCardButton = document.getElementById("flipCardButton");
 const prevCardButton = document.getElementById("prevCardButton");
 const nextCardButton = document.getElementById("nextCardButton");
+const randomPlayButton = document.getElementById("randomPlayButton");
+const randomControls = document.getElementById("randomControls");
+const pauseRandomButton = document.getElementById("pauseRandomButton");
+const resumeRandomButton = document.getElementById("resumeRandomButton");
+const stopRandomButton = document.getElementById("stopRandomButton");
 const choices = document.getElementById("choices");
 const inputAnswerForm = document.getElementById("inputAnswerForm");
 const answerInput = document.getElementById("answerInput");
@@ -158,12 +163,23 @@ let flashcardIndex = 0;
 let flashcardRevealed = false;
 let selectedChoice = null;
 let soundEnabled = true;
+let randomPlayState = {
+  active: false,
+  paused: false,
+  order: [],
+  index: 0,
+  showingAnswer: false,
+  timerId: null,
+  phaseStartedAt: 0,
+  remainingMs: 2000
+};
 
 function shuffle(items) {
   return [...items].sort(() => Math.random() - 0.5);
 }
 
 async function startQuiz(mode) {
+  stopRandomPlayback(false);
   await playStartSound();
   currentMode = mode;
   screenTitle.textContent = mode === "choice" ? "ファール暗記クイズ　4択モード" : "ファール暗記クイズ　入力モード";
@@ -179,6 +195,7 @@ async function startQuiz(mode) {
 }
 
 async function startFlashcards() {
+  stopRandomPlayback(false);
   await playStartSound();
   screenTitle.textContent = "ファール暗記クイズ　フラッシュカードモード";
   flashcardIndex = 0;
@@ -354,7 +371,7 @@ function showFinish() {
   finishScreen.classList.remove("is-hidden");
   progressText.textContent = `${questions.length} / ${questions.length}`;
   scoreText.textContent = `${score}点`;
-  finalScore.textContent = `${questions.length}問中 ${score}問 正解`;
+  finalScore.innerHTML = `${questions.length}問中 <span>${score}問 正解</span>`;
 
   if (score === questions.length) {
     finalMessage.textContent = "全問正解です。ばっちり覚えられています。";
@@ -372,6 +389,7 @@ function showFinish() {
 }
 
 function showStartScreen() {
+  stopRandomPlayback(false);
   quizScreen.classList.add("is-hidden");
   flashcardScreen.classList.add("is-hidden");
   finishScreen.classList.add("is-hidden");
@@ -395,9 +413,11 @@ function showFlashcard() {
   flashcardCounter.textContent = `${flashcardIndex + 1}/${quizData.length}`;
   progressText.textContent = `${flashcardIndex + 1} / ${quizData.length}`;
   scoreText.textContent = "暗記";
+  setFlashcardRandomUi(false);
 }
 
 function flipFlashcard() {
+  if (randomPlayState.active) return;
   flashcardRevealed = !flashcardRevealed;
   playFlipSound();
   showFlashcard();
@@ -417,6 +437,7 @@ function toggleSound(event) {
 }
 
 function moveFlashcard(direction) {
+  if (randomPlayState.active) return;
   const nextIndex = flashcardIndex + direction;
   if (direction > 0 && nextIndex >= quizData.length) {
     flashcardIndex = 0;
@@ -428,6 +449,137 @@ function moveFlashcard(direction) {
   flashcardIndex = nextIndex;
   flashcardRevealed = false;
   showFlashcard();
+}
+
+function setFlashcardRandomUi(isRandom) {
+  flipCardButton.classList.toggle("is-hidden", isRandom);
+  prevCardButton.classList.toggle("is-hidden", isRandom);
+  nextCardButton.classList.toggle("is-hidden", isRandom);
+  randomPlayButton.classList.toggle("is-hidden", isRandom);
+  randomControls.classList.toggle("is-hidden", !isRandom);
+}
+
+function clearRandomTimer() {
+  if (randomPlayState.timerId) {
+    clearTimeout(randomPlayState.timerId);
+    randomPlayState.timerId = null;
+  }
+}
+
+function showRandomCard() {
+  const card = randomPlayState.order[randomPlayState.index];
+  if (!card) return;
+
+  flashcardImage.src = randomPlayState.showingAnswer ? card.answerImage : card.questionImage;
+  flashcardImage.alt = `ランダム再生 ${randomPlayState.index + 1}枚目`;
+  flashcardCounter.textContent = `ランダム再生中 ${randomPlayState.index + 1}/${randomPlayState.order.length}`;
+  progressText.textContent = `${randomPlayState.index + 1} / ${randomPlayState.order.length}`;
+  scoreText.textContent = "再生中";
+}
+
+function scheduleRandomStep(durationMs = 2000) {
+  clearRandomTimer();
+  randomPlayState.phaseStartedAt = Date.now();
+  randomPlayState.remainingMs = durationMs;
+  randomPlayState.timerId = setTimeout(advanceRandomPlayback, durationMs);
+}
+
+function advanceRandomPlayback() {
+  if (!randomPlayState.active || randomPlayState.paused) return;
+
+  if (!randomPlayState.showingAnswer) {
+    randomPlayState.showingAnswer = true;
+    playFlipSound();
+    showRandomCard();
+    scheduleRandomStep(2000);
+    return;
+  }
+
+  randomPlayState.index += 1;
+  if (randomPlayState.index >= randomPlayState.order.length) {
+    finishRandomPlayback();
+    return;
+  }
+
+  randomPlayState.showingAnswer = false;
+  showRandomCard();
+  scheduleRandomStep(2000);
+}
+
+function startRandomPlayback() {
+  if (randomPlayState.active) return;
+
+  randomPlayState = {
+    active: true,
+    paused: false,
+    order: shuffle(quizData),
+    index: 0,
+    showingAnswer: false,
+    timerId: null,
+    phaseStartedAt: Date.now(),
+    remainingMs: 2000
+  };
+
+  setFlashcardRandomUi(true);
+  pauseRandomButton.disabled = false;
+  resumeRandomButton.disabled = true;
+  playStartSound();
+  showRandomCard();
+  scheduleRandomStep(2000);
+}
+
+function pauseRandomPlayback() {
+  if (!randomPlayState.active || randomPlayState.paused) return;
+
+  const elapsed = Date.now() - randomPlayState.phaseStartedAt;
+  randomPlayState.remainingMs = Math.max(250, randomPlayState.remainingMs - elapsed);
+  randomPlayState.paused = true;
+  clearRandomTimer();
+  pauseRandomButton.disabled = true;
+  resumeRandomButton.disabled = false;
+}
+
+function resumeRandomPlayback() {
+  if (!randomPlayState.active || !randomPlayState.paused) return;
+
+  randomPlayState.paused = false;
+  pauseRandomButton.disabled = false;
+  resumeRandomButton.disabled = true;
+  scheduleRandomStep(randomPlayState.remainingMs);
+}
+
+function stopRandomPlayback(restoreUi = true) {
+  if (!randomPlayState.active && !randomPlayState.timerId) return;
+
+  clearRandomTimer();
+  randomPlayState.active = false;
+  randomPlayState.paused = false;
+  randomPlayState.order = [];
+  randomPlayState.index = 0;
+  randomPlayState.showingAnswer = false;
+  randomPlayState.remainingMs = 2000;
+  pauseRandomButton.disabled = false;
+  resumeRandomButton.disabled = true;
+
+  if (restoreUi) {
+    flashcardRevealed = false;
+    showFlashcard();
+  } else {
+    setFlashcardRandomUi(false);
+  }
+}
+
+function finishRandomPlayback() {
+  clearRandomTimer();
+  randomPlayState.active = false;
+  randomPlayState.paused = false;
+  playFinishSound();
+  flashcardCounter.textContent = `ランダム再生 完了 ${quizData.length}/${quizData.length}`;
+  progressText.textContent = `${quizData.length} / ${quizData.length}`;
+  scoreText.textContent = "完了";
+  setFlashcardRandomUi(false);
+  flashcardIndex = 0;
+  flashcardRevealed = false;
 }
 
 function openReturnDialog() {
@@ -528,11 +680,15 @@ async function playPerfectSound() {
   if (!isReady || !audioContext) return;
 
   const now = audioContext.currentTime + 0.02;
-  playTone(784, now, 0.18, 0.065, "triangle");
-  playTone(988, now + 0.12, 0.2, 0.07, "triangle");
-  playTone(1175, now + 0.24, 0.22, 0.075, "sine");
-  playTone(1568, now + 0.38, 0.5, 0.08, "sine");
-  playTone(1976, now + 0.56, 0.46, 0.045, "sine");
+  playTone(523, now, 0.16, 0.075, "triangle");
+  playTone(659, now + 0.12, 0.16, 0.08, "triangle");
+  playTone(784, now + 0.24, 0.2, 0.085, "triangle");
+  playTone(1047, now + 0.38, 0.36, 0.09, "sine");
+  playTone(1319, now + 0.46, 0.34, 0.055, "sine");
+  playTone(1568, now + 0.7, 0.2, 0.07, "triangle");
+  playTone(1760, now + 0.86, 0.2, 0.075, "triangle");
+  playTone(2093, now + 1.02, 0.56, 0.08, "sine");
+  playTone(2637, now + 1.16, 0.5, 0.045, "sine");
 }
 
 flashcardModeButton.addEventListener("click", startFlashcards);
@@ -550,6 +706,10 @@ flipCardButton.addEventListener("click", flipFlashcard);
 flashcardImage.addEventListener("click", flipFlashcard);
 prevCardButton.addEventListener("click", () => moveFlashcard(-1));
 nextCardButton.addEventListener("click", () => moveFlashcard(1));
+randomPlayButton.addEventListener("click", startRandomPlayback);
+pauseRandomButton.addEventListener("click", pauseRandomPlayback);
+resumeRandomButton.addEventListener("click", resumeRandomPlayback);
+stopRandomButton.addEventListener("click", () => stopRandomPlayback(true));
 
 updateSoundButton();
 
