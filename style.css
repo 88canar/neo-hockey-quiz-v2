@@ -64,7 +64,7 @@ input {
 
 .quiz-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 18px;
@@ -266,10 +266,7 @@ h2 {
 }
 
 .question-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  display: block;
   margin-bottom: 14px;
 }
 
@@ -297,10 +294,8 @@ h2 {
 }
 
 .choice-button {
-  display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
-  align-items: center;
-  column-gap: 10px;
+  position: relative;
+  display: block;
   padding: 16px;
   color: var(--text);
   background: #ffffff;
@@ -308,8 +303,8 @@ h2 {
   box-shadow: 0 6px 0 rgba(7, 87, 186, 0.1);
   font-size: clamp(1.24rem, 4.6vw, 1.52rem);
   font-weight: 900;
-  line-height: 1.35;
-  text-align: left;
+  line-height: 1.2;
+  text-align: center;
 }
 
 .choice-button:hover,
@@ -318,10 +313,14 @@ h2 {
 }
 
 .choice-mark {
+  position: absolute;
+  left: 12px;
+  top: 50%;
   display: grid;
   place-items: center;
-  min-width: 42px;
+  width: 42px;
   height: 42px;
+  transform: translateY(-50%);
   color: inherit;
   font-size: 1.9rem;
   font-weight: 900;
@@ -329,15 +328,13 @@ h2 {
 }
 
 .choice-label {
+  display: block;
   min-width: 0;
-}
-
-.choice-note {
-  grid-column: 2;
-  min-height: 1.2em;
-  color: var(--muted);
-  font-size: 1rem;
-  font-weight: 900;
+  overflow: hidden;
+  padding: 0 42px;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .choice-button.correct {
@@ -402,6 +399,10 @@ h2 {
   color: #ffffff;
   background: linear-gradient(180deg, #19a3ff, var(--blue));
   box-shadow: 0 7px 0 rgba(7, 87, 186, 0.25);
+}
+
+.compact-check-button {
+  margin-top: 12px;
 }
 
 .flip-button {
@@ -566,14 +567,15 @@ h2 {
 @media (max-width: 620px) {
   .app {
     min-height: 100svh;
-    padding: 6px;
+    padding: 4px;
     align-items: start;
   }
 
   .quiz-card {
-    padding: 8px;
+    min-height: 100svh;
+    padding: 6px;
     border-width: 2px;
-    border-radius: 16px;
+    border-radius: 14px;
   }
 
   .quiz-card.is-start {
@@ -581,10 +583,15 @@ h2 {
   }
 
   .quiz-header {
-    align-items: stretch;
-    flex-direction: column;
+    align-items: center;
+    flex-direction: row;
     gap: 6px;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
+  }
+
+  .quiz-header > div:first-child {
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
   .eyebrow {
@@ -593,43 +600,31 @@ h2 {
   }
 
   h1 {
-    font-size: clamp(1.02rem, 5vw, 1.32rem);
-    line-height: 1.15;
+    font-size: clamp(0.92rem, 4.5vw, 1.18rem);
+    line-height: 1.12;
   }
 
   .header-tools {
-    width: 100%;
-    gap: 6px;
-    justify-content: space-between;
-    flex-wrap: wrap;
+    flex: 0 0 auto;
+    width: auto;
+    gap: 4px;
+    justify-content: flex-end;
   }
 
   .score-box {
-    flex: 1;
-    min-width: 78px;
-    padding: 5px 8px;
-    border-width: 2px;
-    border-radius: 10px;
-  }
-
-  .score-box span {
-    font-size: 0.78rem;
-  }
-
-  .score-box strong {
-    font-size: 0.98rem;
+    display: none;
   }
 
   .return-button {
-    flex: 1 1 100%;
-    min-height: 38px;
-    padding: 6px 10px;
+    min-width: 0;
+    min-height: 34px;
+    padding: 5px 8px;
     border-width: 2px;
     border-radius: 10px;
-    font-size: 0.92rem;
+    font-size: 0.78rem;
+    white-space: nowrap;
   }
 
-  .choices,
   .input-row {
     grid-template-columns: 1fr;
   }
@@ -662,26 +657,23 @@ h2 {
 
   .image-wrap {
     width: min(100%, 430px);
-    max-height: 39svh;
-    margin-bottom: 8px;
+    max-height: 30svh;
+    margin-bottom: 6px;
     border-width: 3px;
-    border-radius: 16px;
+    border-radius: 14px;
   }
 
   .image-wrap img {
-    max-height: 39svh;
+    max-height: 30svh;
     object-fit: contain;
   }
 
   .question-row {
-    align-items: stretch;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 8px;
+    margin-bottom: 5px;
   }
 
   .question-row p {
-    font-size: 1rem;
+    font-size: 0.92rem;
   }
 
   .secondary-button {
@@ -693,29 +685,28 @@ h2 {
   }
 
   .choices {
-    gap: 7px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
   }
 
   .choice-button {
-    grid-template-columns: 30px minmax(0, 1fr);
-    column-gap: 6px;
-    min-height: 44px;
-    padding: 8px 10px;
+    min-height: 38px;
+    padding: 6px 7px;
     border-width: 2px;
-    border-radius: 12px;
-    font-size: clamp(1rem, 4.4vw, 1.18rem);
-    line-height: 1.22;
+    border-radius: 11px;
+    font-size: clamp(0.76rem, 3.35vw, 1rem);
+    line-height: 1.1;
   }
 
   .choice-mark {
-    min-width: 30px;
-    height: 30px;
-    font-size: 1.45rem;
+    left: 5px;
+    width: 24px;
+    height: 24px;
+    font-size: 1.18rem;
   }
 
-  .choice-note {
-    min-height: 1em;
-    font-size: 0.78rem;
+  .choice-label {
+    padding: 0 22px;
   }
 
   .input-answer {
@@ -740,11 +731,15 @@ h2 {
   }
 
   .primary-button {
-    min-height: 44px;
-    margin-top: 8px;
-    padding: 9px 12px;
+    min-height: 38px;
+    margin-top: 7px;
+    padding: 7px 10px;
     border-radius: 12px;
-    font-size: 1.06rem;
+    font-size: 0.98rem;
+  }
+
+  .compact-check-button {
+    margin-top: 7px;
   }
 
   .inline-button {
@@ -752,25 +747,25 @@ h2 {
   }
 
   .result-box {
-    margin-top: 8px;
-    padding: 10px;
+    margin-top: 6px;
+    padding: 8px;
     border-width: 2px;
     border-radius: 14px;
-    line-height: 1.45;
+    line-height: 1.35;
   }
 
   .result-title {
-    margin-bottom: 5px;
-    font-size: clamp(1.35rem, 6.4vw, 1.85rem);
+    margin-bottom: 3px;
+    font-size: clamp(1.18rem, 5.8vw, 1.62rem);
   }
 
   .result-box p {
-    margin-bottom: 3px;
-    font-size: clamp(0.98rem, 4vw, 1.12rem);
+    margin-bottom: 2px;
+    font-size: clamp(0.88rem, 3.7vw, 1.04rem);
   }
 
   #answerText {
-    font-size: clamp(1.1rem, 4.8vw, 1.35rem);
+    font-size: clamp(1rem, 4.4vw, 1.2rem);
   }
 
   .flip-button {
@@ -792,15 +787,20 @@ h2 {
 @media (max-width: 380px) {
   .image-wrap,
   .image-wrap img {
-    max-height: 35svh;
+    max-height: 27svh;
   }
 
   .choice-button {
-    font-size: 0.96rem;
-    padding: 7px 9px;
+    min-height: 35px;
+    font-size: 0.72rem;
+    padding: 5px 6px;
   }
 
   .quiz-header {
-    margin-bottom: 6px;
+    margin-bottom: 4px;
+  }
+
+  .result-box {
+    padding: 6px;
   }
 }
